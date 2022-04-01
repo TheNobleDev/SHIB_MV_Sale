@@ -26,8 +26,8 @@ async function main() {
   await lockShiboshi.deployed();
   console.log("LockShiboshi deployed to:", lockShiboshi.address);
 
-  console.log("Waiting for 1 minute before verifying the contracts");
-  await new Promise(r => setTimeout(r, 60 * 1000));
+  console.log("Waiting for 1.5 minutes before verifying the contracts");
+  await new Promise(r => setTimeout(r, 90 * 1000));
 
   await hre.run("verify:verify", {
     address: lockLeash.address,
