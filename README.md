@@ -10,3 +10,11 @@
 3. Deploy the contracts on **mainnet** as: `npx hardhat run .\scripts\deploy.js --network mainnet`
 
 Note: The deploy script will automatically verify the contracts on etherscan as long as the API key in the .env file exists.
+
+
+## WL Signing
+
+1. Add `SIGNING_PRIVATE_KEY` in the env file (see .env.sample)
+2. Populate the `scripts\addresses.json` file with all addresses to WL
+3. Run the script as: `npx hardhat run .\scripts\wlSigning.js`
+4. Output will be stored in `scripts\signatures.json` file
