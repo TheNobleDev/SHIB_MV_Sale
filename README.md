@@ -18,3 +18,8 @@ Note: The deploy script will automatically verify the contracts on etherscan as 
 2. Populate the `scripts\addresses.json` file with all addresses to WL
 3. Run the script as: `npx hardhat run .\scripts\wlSigning.js`
 4. Output will be stored in `scripts\signatures.json` file
+
+
+## Encoding (x,y) to a unique ID
+
+1. Edit and run the script: `npx hardhat run .\scripts\encode.js --network rinkeby`
