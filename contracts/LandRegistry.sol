@@ -1,19 +1,84 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-contract LandRegistry is ERC721, ERC721Enumerable {
+import "./interfaces/ILandRegistry.sol";
+
+contract LandRegistry is
+    ILandRegistry,
+    Initializable,
+    ERC721Upgradeable,
+    ERC721EnumerableUpgradeable,
+    AccessControlUpgradeable,
+    UUPSUpgradeable
+{
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+
     uint32 constant clearLow = 0xffff0000;
     uint32 constant clearHigh = 0x0000ffff;
     uint32 constant factor = 0x10000;
 
-    constructor() ERC721("Land", "Land") {}
+    string baseURI;
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
+
+    function initialize() public initializer {
+        __ERC721_init("LandRegistry", "LAND");
+        __ERC721Enumerable_init();
+        __AccessControl_init();
+        __UUPSUpgradeable_init();
+
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(MINTER_ROLE, msg.sender);
+        _grantRole(UPGRADER_ROLE, msg.sender);
+    }
 
     function encode(int16 x, int16 y) external pure returns (uint32) {
         return _encodeTokenId(x, y);
+    }
+
+    function decode(uint32 value) external pure returns (int16 x, int16 y) {
+        return _decodeTokenId(value);
+    }
+
+    function exists(uint256 tokenId) external view returns (bool) {
+        return _exists(tokenId);
+    }
+
+    function exists(int16 x, int16 y) external view returns (bool) {
+        return _exists(_encodeTokenId(x, y));
+    }
+
+    function setBaseURI(string calldata uri)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        baseURI = uri;
+    }
+
+    function mint(
+        address user,
+        int16 x,
+        int16 y
+    ) external onlyRole(MINTER_ROLE) {
+        _safeMint(user, _encodeTokenId(x, y));
+    }
+
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        override
+        onlyRole(UPGRADER_ROLE)
+    {}
+
+    function _baseURI() internal view override returns (string memory) {
+        return baseURI;
     }
 
     function _encodeTokenId(int16 x, int16 y) internal pure returns (uint32) {
@@ -22,26 +87,44 @@ contract LandRegistry is ERC721, ERC721Enumerable {
             (uint32(uint16(y)) & clearHigh);
     }
 
-    function mint(
-        address user,
-        int16 x,
-        int16 y
-    ) external {
-        _safeMint(user, _encodeTokenId(x, y));
+    function _decodeTokenId(uint32 value)
+        internal
+        pure
+        returns (int16 x, int16 y)
+    {
+        x = _expandNegative16BitCast((value & clearLow) >> 16);
+        y = _expandNegative16BitCast(value & clearHigh);
     }
+
+    function _expandNegative16BitCast(uint32 value)
+        internal
+        pure
+        returns (int16)
+    {
+        if (value & (1 << 15) != 0) {
+            return int16(int32(value | clearLow));
+        }
+        return int16(int32(value));
+    }
+
+    // The following functions are overrides required by Solidity.
 
     function _beforeTokenTransfer(
         address from,
         address to,
         uint256 tokenId
-    ) internal override(ERC721, ERC721Enumerable) {
+    ) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, ERC721Enumerable)
+        override(
+            ERC721Upgradeable,
+            ERC721EnumerableUpgradeable,
+            AccessControlUpgradeable
+        )
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

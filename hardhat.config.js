@@ -3,6 +3,7 @@ require("dotenv").config();
 require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
+require('@openzeppelin/hardhat-upgrades');
 require("hardhat-gas-reporter");
 require("solidity-coverage");
 require("hardhat-prettier");
@@ -36,7 +37,7 @@ module.exports = {
   networks: {
     rinkeby: {
       url: process.env.RINKEBY_URL || "",
-      gasPrice: 3 * 1e9,
+      // gasPrice: 3 * 1e9,
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
@@ -48,7 +49,7 @@ module.exports = {
     },
   },
   gasReporter: {
-    enabled: process.env.REPORT_GAS !== undefined,
+    enabled: process.env.REPORT_GAS == true,
     currency: "USD",
   },
   etherscan: {

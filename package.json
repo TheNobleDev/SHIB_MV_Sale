@@ -12,6 +12,8 @@
   "dependencies": {
     "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@openzeppelin/contracts": "^4.5.0",
+    "@openzeppelin/contracts-upgradeable": "^4.5.2",
+    "@openzeppelin/hardhat-upgrades": "^1.17.0",
     "dotenv": "^16.0.0",
     "hardhat": "^2.9.0",
     "hardhat-prettier": "0.0.1",
