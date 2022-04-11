@@ -74,6 +74,17 @@ async function setupMap(landAuction) {
   await landAuction.setGridVal(62,52,62,1, 4);
   await landAuction.setGridVal(62,-1,62,-52, 4);
 
+  // ---reserved lands----
+  console.log("Starting reserved lands");
+  await landAuction.setGridVal(12,4,12,1, 1);
+  await landAuction.setGridVal(12,-1,12,-4, 1);
+  await landAuction.setGridVal(1,-12,1,-12, 1);
+  await landAuction.setGridVal(1,12,2,12, 1);
+  await landAuction.setGridVal(-1,-33,-1,-33, 1);
+  await landAuction.setGridVal(1,-33,1,-33, 1);
+  await landAuction.setGridVal(-1,33,-1,33, 1);
+  await landAuction.setGridVal(1,33,1,33, 1);
+
   // tier 4 : 1
   // tier 3 : 2
   // tier 2 : 3
