@@ -80,9 +80,9 @@ async function setupMap(landAuction) {
   await landAuction.setGridVal(12,-1,12,-4, 1);
   await landAuction.setGridVal(1,-12,1,-12, 1);
   await landAuction.setGridVal(1,12,2,12, 1);
+  await landAuction.setGridVal(-1,12,-1,12, 1);
   await landAuction.setGridVal(-1,-33,-1,-33, 1);
   await landAuction.setGridVal(1,-33,1,-33, 1);
-  await landAuction.setGridVal(-1,33,-1,33, 1);
   await landAuction.setGridVal(1,33,1,33, 1);
 
   // tier 4 : 1
