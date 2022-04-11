@@ -30,7 +30,7 @@ contract LandRegistry is
     constructor() initializer {}
 
     function initialize() public initializer {
-        __ERC721_init("LandRegistry", "LAND");
+        __ERC721_init("SHIB LAND", "SHIBMV");
         __ERC721Enumerable_init();
         __AccessControl_init();
         __UUPSUpgradeable_init();
