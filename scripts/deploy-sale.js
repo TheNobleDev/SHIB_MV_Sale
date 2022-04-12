@@ -133,12 +133,12 @@ async function main() {
   console.log("Waiting for 1 minute before verifying the contracts");
   await new Promise(r => setTimeout(r, 60 * 1000));
 
-  // await hre.run("verify:verify", {
-  //   address: implementationAddress,
-  //   constructorArguments: [],
-  // });
+  await hre.run("verify:verify", {
+    address: implementationAddress,
+    constructorArguments: [],
+  });
 
-  // console.log("Implementation verified");
+  console.log("Implementation verified");
 
   await hre.run("verify:verify", {
     address: landAuction.address,
