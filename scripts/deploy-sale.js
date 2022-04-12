@@ -147,6 +147,11 @@ async function main() {
 
   console.log("Land Auction verified");
 
+  let MINTER_ROLE = await landRegistry.MINTER_ROLE();
+  console.log("Minter role is", MINTER_ROLE);
+  await landRegistry.grantRole(MINTER_ROLE, landAuction.address);
+  console.log("Minter role granted");
+
   await setupMap(landAuction);
   return;
 }
