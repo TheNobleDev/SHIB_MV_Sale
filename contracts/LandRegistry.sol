@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
@@ -19,12 +19,22 @@ contract LandRegistry is
 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+    bytes32 public constant METADATA_SETTER_ROLE =
+        keccak256("METADATA_SETTER_ROLE");
 
     uint32 constant clearLow = 0xffff0000;
     uint32 constant clearHigh = 0x0000ffff;
     uint32 constant factor = 0x10000;
 
-    string baseURI;
+    string public baseURI;
+    mapping(uint32 => string) private _name;
+
+    event LogNameChanged(
+        int16 x,
+        int16 y,
+        uint32 indexed tokenId,
+        string newName
+    );
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
@@ -38,6 +48,7 @@ contract LandRegistry is
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
         _grantRole(UPGRADER_ROLE, msg.sender);
+        _grantRole(METADATA_SETTER_ROLE, msg.sender);
     }
 
     function encode(int16 x, int16 y) external pure returns (uint32) {
@@ -56,6 +67,14 @@ contract LandRegistry is
         return _exists(_encodeTokenId(x, y));
     }
 
+    function nameOf(uint32 tokenId) external view returns (string memory) {
+        return _name[tokenId];
+    }
+
+    function nameOf(int16 x, int16 y) external view returns (string memory) {
+        return _name[_encodeTokenId(x, y)];
+    }
+
     function setBaseURI(string calldata uri)
         external
         onlyRole(DEFAULT_ADMIN_ROLE)
@@ -69,6 +88,17 @@ contract LandRegistry is
         int16 y
     ) external onlyRole(MINTER_ROLE) {
         _safeMint(user, _encodeTokenId(x, y));
+    }
+
+    function setName(
+        int16 x,
+        int16 y,
+        string memory newName
+    ) external onlyRole(METADATA_SETTER_ROLE) {
+        uint32 tokenId = _encodeTokenId(x, y);
+        require(_exists(tokenId), "ERR_TOKEN_DOES_NOT_EXIST");
+        _name[tokenId] = newName;
+        emit LogNameChanged(x, y, tokenId, newName);
     }
 
     function _authorizeUpgrade(address newImplementation)

@@ -77,7 +77,8 @@ contract LandAuction is ILandAuction, AccessControl, ReentrancyGuard {
         uint32 indexed encXY,
         int16 x,
         int16 y,
-        uint256 price
+        uint256 price,
+        uint256 time
     );
     event LandBought(
         address indexed user,
@@ -587,7 +588,7 @@ contract LandAuction is ILandAuction, AccessControl, ReentrancyGuard {
         }
         _statusOfBidsOf[user][encXY] = 1;
 
-        emit BidCreated(user, encXY, x, y, price);
+        emit BidCreated(user, encXY, x, y, price, block.timestamp);
     }
 
     function _mintPublicOrPrivate(
