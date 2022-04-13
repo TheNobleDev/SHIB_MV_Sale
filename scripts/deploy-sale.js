@@ -117,39 +117,10 @@ async function main() {
   console.log("Deployer address:", deployer.address);
 
   const LandRegistry = await hre.ethers.getContractFactory("LandRegistry");
-  const landRegistry = await hre.upgrades.deployProxy(LandRegistry, { kind: 'uups', timeout: 0 });
-  await landRegistry.deployed();
-  console.log("LandRegistry deployed to:", landRegistry.address);
-
-  console.log("Waiting for 1 minute before getting the implementation address");
-  await new Promise(r => setTimeout(r, 60 * 1000));
-
-  const implementationAddress = await hre.upgrades.erc1967.getImplementationAddress(landRegistry.address);
-  console.log("Implementation address is:", implementationAddress);
+  const landRegistry = await LandRegistry.attach("0xEfAEd650f1a94801806BB110019d9B0dc79531A8");
 
   const LandAuction = await hre.ethers.getContractFactory("LandAuction");
-  const landAuction = await LandAuction.deploy(WETH, landRegistry.address, LOCKLEASH, LOCKSHIBOSHI);
-
-  console.log("LandAuction deployed to:", landAuction.address);
-
-  await landAuction.deployed();
-
-  console.log("Waiting for 1 minute before verifying the contracts");
-  await new Promise(r => setTimeout(r, 60 * 1000));
-
-  await hre.run("verify:verify", {
-    address: implementationAddress,
-    constructorArguments: [],
-  });
-
-  console.log("Implementation verified");
-
-  await hre.run("verify:verify", {
-    address: landAuction.address,
-    constructorArguments: [WETH, landRegistry.address, LOCKLEASH, LOCKSHIBOSHI],
-  });
-
-  console.log("Land Auction verified");
+  const landAuction = await LandAuction.attach("0x9ed0F787223FF1FeB0cFB33a9207c646d182E918");
 
   let nonce = await ethers.provider.getTransactionCount(deployer.address);
   console.log("Deployer nonce:", nonce);
