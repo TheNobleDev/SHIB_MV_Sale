@@ -59,6 +59,7 @@ contract LandAuctionV2 is ILandAuction, AccessControl, ReentrancyGuard {
     mapping(int16 => mapping(int16 => Bid)) public getCurrentBid;
     mapping(address => uint256) private _winningsBidsOf;
 
+    mapping(address => uint32[]) private _mintedBy;
     mapping(address => uint32[]) private _allBidsOf;
     mapping(address => mapping(uint32 => uint8)) private _statusOfBidsOf;
 
@@ -298,6 +299,25 @@ contract LandAuctionV2 is ILandAuction, AccessControl, ReentrancyGuard {
         return (xs, ys);
     }
 
+    function mintedBy(address user) external
+        view
+        returns (int16[] memory, int16[] memory) {
+
+            uint32[] storage allMints = _mintedBy[user];
+            uint256 mintCount = allMints.length;
+            int16[] memory xs = new int16[](mintCount);
+            int16[] memory ys = new int16[](mintCount);
+
+            for (uint256 i = 0; i < mintCount; i = _uncheckedInc(i)) {
+                (int16 x, int16 y) = _decodeXY(allMints[i]);
+                xs[i] = x;
+                ys[i] = y;
+            }
+
+            return (xs, ys);
+        }
+
+
     function setStage(uint256 stage) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (stage >= 2) {
             require(
@@ -382,6 +402,7 @@ contract LandAuctionV2 is ILandAuction, AccessControl, ReentrancyGuard {
             (, address user) = auctionV1.getCurrentBid(x, y);
             require(user != address(0), "ERR_NO_BID_FOUND");
             landRegistry.mint(user, x, y);
+            _mintedBy[user].push(_encodeXY(x, y));
         }
     }
 
