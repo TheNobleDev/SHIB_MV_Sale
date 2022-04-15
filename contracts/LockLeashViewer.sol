@@ -14,8 +14,8 @@ contract LockLeashViewer {
 
     function weightOf(address user) public view returns (uint256) {
         uint256 weight = lockLeash.weightOf(user);
-        
-        if(weight == 9 ether) {
+
+        if (weight == 9 ether) {
             return 9 ether + 1;
         }
         return weight;

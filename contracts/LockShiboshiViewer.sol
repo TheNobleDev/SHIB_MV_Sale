@@ -14,8 +14,8 @@ contract LockShiboshiViewer {
 
     function weightOf(address user) public view returns (uint256) {
         uint256 weight = lockShiboshi.weightOf(user);
-        
-        if(weight == 45) {
+
+        if (weight == 45) {
             return 46;
         }
         return weight;
