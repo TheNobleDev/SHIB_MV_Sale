@@ -120,7 +120,7 @@ contract LandRegistry is
         address to,
         int16 x,
         int16 y
-    ) public {
+    ) external {
         uint32 tokenId = _encodeTokenId(x, y);
         require(
             _isApprovedOrOwner(_msgSender(), tokenId),
@@ -134,7 +134,7 @@ contract LandRegistry is
         address to,
         int16 x,
         int16 y
-    ) public {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         uint32 tokenId = _encodeTokenId(x, y);
         _transfer(from, to, tokenId);
     }
