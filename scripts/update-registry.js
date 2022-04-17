@@ -15,12 +15,15 @@ async function main() {
   const deployer = signers[0];
   console.log("Deployer address:", deployer.address);
 
-  const LandRegistry = await hre.ethers.getContractFactory("contracts\\LandRegistryV2.sol:LandRegistry");
+  const LandRegistry = await hre.ethers.getContractFactory("contracts\\LandRegistryV3.sol:LandRegistry");
 
   await upgrades.upgradeProxy(LANDREGISTRY, LandRegistry);
   console.log("Upgraded the LandRegistry contract");
 
   const landRegistry = await LandRegistry.attach(LANDREGISTRY);
+
+  console.log("Waiting for 1 minute before verifying the contracts");
+  await new Promise(r => setTimeout(r, 60 * 1000));
 
   const implementationAddress = await hre.upgrades.erc1967.getImplementationAddress(landRegistry.address);
   console.log("Implementation address is:", implementationAddress);
@@ -29,9 +32,8 @@ async function main() {
     address: implementationAddress,
     constructorArguments: [],
   });
+  console.log("Implementation verified");
 
-  await landRegistry.transferOwnership(deployer.address);
-  console.log(`Stored ${deployer.address} as the owner`);
   return;
 }
 
