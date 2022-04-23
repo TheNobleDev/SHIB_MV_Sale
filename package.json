@@ -14,6 +14,7 @@
     "@openzeppelin/contracts": "^4.5.0",
     "@openzeppelin/contracts-upgradeable": "^4.5.2",
     "@openzeppelin/hardhat-upgrades": "^1.17.0",
+    "@unification-com/xfund-router": "^0.4.2",
     "dotenv": "^16.0.0",
     "hardhat": "^2.9.0",
     "hardhat-prettier": "0.0.1",

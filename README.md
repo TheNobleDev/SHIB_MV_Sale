@@ -24,6 +24,16 @@
 3. Deploy the contracts on **mainnet** as: `npx hardhat run .\scripts\deploy-saleV2.js --network mainnet`
 
 
+## Deployment (for LandAuctionV3)
+
+1. Set the required gas values in `hardhat.config.js`, skip this step to use the current netwwork default values
+2. Deploy the contracts on **rinkeby** as: `npx hardhat run .\scripts\deploy-saleV3.js --network rinkeby`
+3. Deploy the contracts on **mainnet** as: `npx hardhat run .\scripts\deploy-saleV3.js --network mainnet`
+4. Send some xFUND tokens to the LandAuctionV3 contract
+5. Set sale stage to `3`.
+6. Periodically call the `getData(...)` function with parameters: `0xFDEc0386011d085A6b4F0e37Fab5d7f2601aCB33, 41500000`
+
+
 ## Updating LandRegistry to V2
 
 1. Set the required gas values in `hardhat.config.js`, skip this step to use the current netwwork default values
