@@ -30,10 +30,13 @@ contract LandAuctionV3 is ConsumerBase, Ownable, ReentrancyGuard {
     bool public multiMintEnabled;
 
     LandAuction public auctionV1;
+    LandAuction public auctionV2;
     ILandRegistry public landRegistry;
 
     IERC20 public immutable SHIB;
     Stage public currentStage;
+
+    mapping(address => uint32[]) private _allMintsOf;
 
     event StageSet(uint256 stage);
     event multiMintToggled(bool newValue);
@@ -50,12 +53,14 @@ contract LandAuctionV3 is ConsumerBase, Ownable, ReentrancyGuard {
     constructor(
         IERC20 _shib,
         LandAuction _auctionV1,
+        LandAuction _auctionV2,
         ILandRegistry _landRegistry,
         address _router,
         address _xfund
     ) ConsumerBase(_router, _xfund) {
         SHIB = _shib;
         auctionV1 = _auctionV1;
+        auctionV2 = _auctionV2;
         landRegistry = _landRegistry;
     }
 
@@ -68,6 +73,37 @@ contract LandAuctionV3 is ConsumerBase, Ownable, ReentrancyGuard {
     modifier onlyStage(Stage s) {
         require(currentStage == s, "ERR_THIS_STAGE_NOT_LIVE_YET");
         _;
+    }
+
+    function bidInfoOf(address user)
+        external
+        view
+        returns (int16[] memory, int16[] memory)
+    {
+        (int16[] memory xsV1, int16[] memory ysV1) = auctionV2.bidInfoOf(user);
+        uint256 lengthV1 = xsV1.length;
+
+        uint256 bidCount = _allMintsOf[user].length;
+        int16[] memory xs = new int16[](bidCount + lengthV1);
+        int16[] memory ys = new int16[](bidCount + lengthV1);
+
+        for (uint256 i = 0; i < lengthV1; i = _uncheckedInc(i)) {
+            xs[i] = xsV1[i];
+            ys[i] = ysV1[i];
+        }
+
+        uint256 ptr = lengthV1;
+        uint32[] storage allMints = _allMintsOf[user];
+        uint256 length = allMints.length;
+
+        for (uint256 i = 0; i < length; i = _uncheckedInc(i)) {
+            (int16 x, int16 y) = _decodeXY(allMints[i]);
+            xs[ptr] = x;
+            ys[ptr] = y;
+            ptr = _uncheckedInc(ptr);
+        }
+
+        return (xs, ys);
     }
 
     function getReservePriceShib(int16 x, int16 y)
@@ -101,11 +137,14 @@ contract LandAuctionV3 is ConsumerBase, Ownable, ReentrancyGuard {
 
         SHIB.transferFrom(user, address(this), reservePriceInShib);
 
+        uint32 encXY = _encodeXY(x, y);
+        _allMintsOf[user].push(encXY);
+
         landRegistry.mint(user, x, y);
 
         emit LandBoughtWithShib(
             user,
-            _encodeXY(x, y),
+            encXY,
             x,
             y,
             reservePriceInShib,
@@ -145,11 +184,14 @@ contract LandAuctionV3 is ConsumerBase, Ownable, ReentrancyGuard {
                 "ERR_INSUFFICIENT_SHIB_SENT"
             );
 
+            uint32 encXY = _encodeXY(x, y);
+            _allMintsOf[user].push(encXY);
+
             landRegistry.mint(user, x, y);
 
             emit LandBoughtWithShib(
                 user,
-                _encodeXY(x, y),
+                encXY,
                 x,
                 y,
                 prices[i],
@@ -170,6 +212,10 @@ contract LandAuctionV3 is ConsumerBase, Ownable, ReentrancyGuard {
 
     function setAuctionV1(LandAuction _auctionV1) external onlyOwner {
         auctionV1 = _auctionV1;
+    }
+
+    function setAuctionV2(LandAuction _auctionV2) external onlyOwner {
+        auctionV2 = _auctionV2;
     }
 
     function setMultiMint(bool desiredValue) external onlyOwner {
@@ -218,5 +264,21 @@ contract LandAuctionV3 is ConsumerBase, Ownable, ReentrancyGuard {
         return
             ((uint32(uint16(x)) * factor) & clearLow) |
             (uint32(uint16(y)) & clearHigh);
+    }
+
+    function _decodeXY(uint32 value) internal pure returns (int16 x, int16 y) {
+        x = _expandNegative16BitCast((value & clearLow) >> 16);
+        y = _expandNegative16BitCast(value & clearHigh);
+    }
+
+    function _expandNegative16BitCast(uint32 value)
+        internal
+        pure
+        returns (int16)
+    {
+        if (value & (1 << 15) != 0) {
+            return int16(int32(value | clearLow));
+        }
+        return int16(int32(value));
     }
 }

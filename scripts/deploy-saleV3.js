@@ -12,10 +12,12 @@ async function main() {
 
   const LANDREGISTRY = constants.LANDREGISTRY;
   const LANDAUCTIONV1 = constants.LANDAUCTIONV1;
-  const SHIB = constants.SHIB;
+  const LANDAUCTIONV2 = constants.LANDAUCTIONV2;
 
   const XFUNDROUTER = constants.XFUNDROUTER;
   const XFUNDTOKEN = constants.XFUNDTOKEN;
+
+  let SHIB;
 
   const signers = await ethers.getSigners();
   const deployer = signers[0];
@@ -27,11 +29,20 @@ async function main() {
   const LandAuction = await hre.ethers.getContractFactory("LandAuction");
   const landAuction = await LandAuction.attach(LANDAUCTIONV1);
 
+  if(network.name == "rinkeby") {
+    const Shib = await hre.ethers.getContractFactory("Shib");
+    const shib = await Shib.deploy();
+
+    SHIB = shib.address;
+  } else {
+    SHIB = constants.SHIB;
+  }
 
   const LandAuctionV3 = await hre.ethers.getContractFactory("LandAuctionV3");
   const landAuctionV3 = await LandAuctionV3.deploy(
     SHIB,
     LANDAUCTIONV1,
+    LANDAUCTIONV2,
     LANDREGISTRY,
     XFUNDROUTER,
     XFUNDTOKEN
@@ -42,10 +53,18 @@ async function main() {
   console.log("Waiting for 1 minutes before verifying the contracts");
   await new Promise(r => setTimeout(r, 60 * 1000));
 
+  if(network.name == "rinkeby") {
+    await hre.run("verify:verify", {
+      address: SHIB,
+      constructorArguments: [],
+    });
+    console.log("Shib verified");
+  }
+
   await hre.run("verify:verify", {
     address: landAuctionV3.address,
     constructorArguments: [
-    SHIB, LANDAUCTIONV1, LANDREGISTRY, XFUNDROUTER, XFUNDTOKEN
+    shib.address, LANDAUCTIONV1, LANDAUCTIONV2, LANDREGISTRY, XFUNDROUTER, XFUNDTOKEN
     ],
   });
   console.log("LandAuctionV3 verified");
