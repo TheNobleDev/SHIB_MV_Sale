@@ -64,7 +64,7 @@ async function main() {
   await hre.run("verify:verify", {
     address: landAuctionV3.address,
     constructorArguments: [
-    shib.address, LANDAUCTIONV1, LANDAUCTIONV2, LANDREGISTRY, XFUNDROUTER, XFUNDTOKEN
+    SHIB, LANDAUCTIONV1, LANDAUCTIONV2, LANDREGISTRY, XFUNDROUTER, XFUNDTOKEN
     ],
   });
   console.log("LandAuctionV3 verified");
